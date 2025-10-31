@@ -4,9 +4,15 @@
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   </head>
+
   <body>
-    <a-scene mindar-image="imageTargetSrc: assets/targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      
+    <a-scene
+      mindar-image="imageTargetSrc: assets/targets.mind;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+    >
       <a-assets>
         <img id="card" src="assets/Paola Sanchez.jpg" />
       </a-assets>
@@ -14,9 +20,87 @@
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-plane src="#card" width="1.0" height="0.6" position="0 0 0" rotation="0 0 0" material="side: double; transparent: true; opacity: 0.9"></a-plane>
-      </a-entity>
+        <!-- imagen de la tarjeta -->
+        <a-plane
+          src="#card"
+          width="1.0"
+          height="0.6"
+          position="0 0 0"
+          rotation="0 0 0"
+          material="side: double; transparent: true; opacity: 0.9"
+        ></a-plane>
 
+        <!-- botón grande, cómodo para dedo -->
+        <a-plane
+          id="btn"
+          color="#ff4444"
+          width="0.40"
+          height="0.18"
+          position="0 -0.45 0.01"
+          material="side: double"
+        >
+          <a-text
+            value="Abrir Web"
+            align="center"
+            position="0 0 0.01"
+            scale="0.6 0.6 0.6"
+            color="#fff"
+          ></a-text>
+        </a-plane>
+      </a-entity>
     </a-scene>
+
+    <script>
+      // URL a abrir
+      const URL = "https://paolasanchezortodoncia.com";
+
+      // Raycast manual (PC y móvil)
+      AFRAME.registerComponent("screen-click-opener", {
+        init() {
+          this.canvas  = this.el.sceneEl.renderer.domElement;
+          this.camera  = this.el.sceneEl.camera;
+          this.btnEl   = document.getElementById("btn");
+          this.target3 = this.btnEl.object3D;
+
+          this.raycaster = new THREE.Raycaster();
+          this.pointer   = new THREE.Vector2();
+
+          this.onPointer = (ev) => {
+            const isTouch = ev.type.startsWith("touch");
+            const x = isTouch ? ev.touches[0].clientX : ev.clientX;
+            const y = isTouch ? ev.touches[0].clientY : ev.clientY;
+            const rect = this.canvas.getBoundingClientRect();
+
+            // NDC (-1..1)
+            this.pointer.x = ((x - rect.left) / rect.width) * 2 - 1;
+            this.pointer.y = -(((y - rect.top) / rect.height) * 2 - 1);
+
+            this.raycaster.setFromCamera(this.pointer, this.camera);
+            const hits = this.raycaster.intersectObject(this.target3, true);
+
+            if (hits.length > 0) {
+              // feedback rápido de “tap”
+              this.btnEl.setAttribute("color", "#ff2222");
+              setTimeout(() => this.btnEl.setAttribute("color", "#ff4444"), 120);
+
+              // abrir en nueva pestaña (si se bloquea, misma pestaña)
+              const win = window.open(URL, "_blank");
+              if (!win) window.location.assign(URL);
+            }
+          };
+
+          // escuchar click y touch (móvil)
+          window.addEventListener("click", this.onPointer, { passive: true });
+          window.addEventListener("touchstart", this.onPointer, { passive: true });
+        },
+        remove() {
+          window.removeEventListener("click", this.onPointer);
+          window.removeEventListener("touchstart", this.onPointer);
+        }
+      });
+
+      // montar el componente en la escena
+      document.querySelector("a-scene").setAttribute("screen-click-opener", "");
+    </script>
   </body>
 </html>
