@@ -26,10 +26,24 @@
         <!-- Tarjeta principal -->
         <a-plane src="#card" width="1.0" height="0.6" position="0 0 0" material="side: double"></a-plane>
 
+        <!-- Nuevo botón: Registrate aquí -->
+        <a-plane
+          id="btnRegister"
+          color="#ffffff"
+          width="0.9"
+          height="0.12"
+          position="0 -0.45 0.01"
+          material="side: double"
+        >
+          <a-text value="Registrate aqui / Register here" align="center" scale="0.2 0.2 0.2" color="#A69886" font="dejavu"></a-text>
+        </a-plane>
+
         <!-- Botón WEB -->
-        <a-plane id="btn" color="#ffffff" width="0.6" height="0.12" position="0 -0.45 0.01" material="side: double">
+        <a-plane id="btn" color="#ffffff" width="0.6" height="0.12" position="0 -0.6 0.01" material="side: double">
           <a-text value="IR A LA WEB" align="center" scale="0.2 0.2 0.2" color="#A69886" font="dejavu"></a-text>
         </a-plane>
+
+        
 
         <!-- =========================
              BLOQUE VIDEO 1 (IZQUIERDA)
@@ -37,9 +51,6 @@
         <a-video id="vid1" src="#video1" width="0.6" height="1.0" position="-0.9 0 0.01" material="side: double"></a-video>
 
         <!-- Grupo de botones centrado bajo el video 1 -->
-        <!-- Medidas: ancho=0.45 alto=0.12  |  cuadrado=0.12  | gap=0.03  -->
-        <!-- Cálculo centrado para x (total=0.60): leftEdge = -0.9 - 0.30 = -1.2 -->
-        <!-- Reproducir (centro x = -0.975), Reiniciar (centro x = -0.66), y = -0.65 -->
         <a-plane id="btnV1" color="#A69576" width="0.45" height="0.12" position="-0.975 -0.65 0.02" material="side: double">
           <a-text id="lblV1" value="Reproducir" align="center" scale="0.22 0.22 0.22" color="#fff" position="0 0 0.01"></a-text>
         </a-plane>
@@ -53,8 +64,6 @@
              ========================= -->
         <a-video id="vid2" src="#video2" width="0.6" height="1.0" position="0.9 0 0.01" material="side: double"></a-video>
 
-        <!-- Cálculo centrado espejo (leftEdge = 0.9 - 0.30 = 0.6) -->
-        <!-- Reproducir (centro x = 0.825), Reiniciar (centro x = 1.14), y = -0.65 -->
         <a-plane id="btnV2" color="#A69576" width="0.45" height="0.12" position="0.825 -0.65 0.02" material="side: double">
           <a-text id="lblV2" value="Reproducir" align="center" scale="0.22 0.22 0.22" color="#fff" position="0 0 0.01"></a-text>
         </a-plane>
@@ -67,6 +76,7 @@
 
     <script>
       const URL = "https://paolasanchezortodoncia.com";
+      const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfQi4iy42Rf00xZrCHNl3PLo1dYFF1NBe8McPPeC7rsFXCu7g/viewform?usp=header";
       const v1 = document.getElementById("video1");
       const v2 = document.getElementById("video2");
       const btn = document.getElementById("btn");
@@ -79,58 +89,132 @@
       const btnR1 = document.getElementById("btnR1");
       const btnR2 = document.getElementById("btnR2");
 
+      const btnRegister = document.getElementById("btnRegister");
+
       // Inicia todo en pausa
       v1.pause(); v2.pause();
 
-      const playV1 = async () => { await v1.play().catch(()=>{}); v2.pause(); lblV1.setAttribute("value","Pausar"); lblV2.setAttribute("value","Reproducir"); };
-      const pauseV1 = ()=>{ v1.pause(); lblV1.setAttribute("value","Reproducir"); };
-      const playV2 = async () => { await v2.play().catch(()=>{}); v1.pause(); lblV2.setAttribute("value","Pausar"); lblV1.setAttribute("value","Reproducir"); };
-      const pauseV2 = ()=>{ v2.pause(); lblV2.setAttribute("value","Reproducir"); };
+      let canClick = true;  // Evita múltiples clics seguidos
 
-      const restartV1 = ()=>{ v1.currentTime=0; v1.play().catch(()=>{}); v2.pause(); lblV1.setAttribute("value","Pausar"); lblV2.setAttribute("value","Reproducir"); };
-      const restartV2 = ()=>{ v2.currentTime=0; v2.play().catch(()=>{}); v1.pause(); lblV2.setAttribute("value","Pausar"); lblV1.setAttribute("value","Reproducir"); };
+      const playV1 = async () => {
+        if (!canClick) return;
+        canClick = false;  // Bloquea el click para evitar la acción repetida
+        await v1.play().catch(() => {});
+        v2.pause();
+        lblV1.setAttribute("value", "Pausar");
+        lblV2.setAttribute("value", "Reproducir");
+
+        setTimeout(() => canClick = true, 300);  // Libera el click después de 300ms
+      };
+
+      const pauseV1 = () => {
+        if (!canClick) return;
+        canClick = false;
+        v1.pause();
+        lblV1.setAttribute("value", "Reproducir");
+
+        setTimeout(() => canClick = true, 300);  // Libera el click después de 300ms
+      };
+
+      const playV2 = async () => {
+        if (!canClick) return;
+        canClick = false;
+        await v2.play().catch(() => {});
+        v1.pause();
+        lblV2.setAttribute("value", "Pausar");
+        lblV1.setAttribute("value", "Reproducir");
+
+        setTimeout(() => canClick = true, 300);  // Libera el click después de 300ms
+      };
+
+      const pauseV2 = () => {
+        if (!canClick) return;
+        canClick = false;
+        v2.pause();
+        lblV2.setAttribute("value", "Reproducir");
+
+        setTimeout(() => canClick = true, 300);  // Libera el click después de 300ms
+      };
+
+      const restartV1 = () => {
+        if (!canClick) return;
+        canClick = false;
+        v1.currentTime = 0;
+        v1.play().catch(() => {});
+        v2.pause();
+        lblV1.setAttribute("value", "Pausar");
+        lblV2.setAttribute("value", "Reproducir");
+
+        setTimeout(() => canClick = true, 300);  // Libera el click después de 300ms
+      };
+
+      const restartV2 = () => {
+        if (!canClick) return;
+        canClick = false;
+        v2.currentTime = 0;
+        v2.play().catch(() => {});
+        v1.pause();
+        lblV2.setAttribute("value", "Pausar");
+        lblV1.setAttribute("value", "Reproducir");
+
+        setTimeout(() => canClick = true, 300);  // Libera el click después de 300ms
+      };
+
+      // Redirigir al formulario al hacer clic en el botón "Registrate aquí"
+      btnRegister.addEventListener("click", () => {
+        window.open(FORM_URL, "_blank");
+      });
 
       // Raycast manual: web / v1 / v2 / r1 / r2
-      AFRAME.registerComponent("screen-click-handler",{
-        init(){
-          const scene=this.el.sceneEl;
-          this.canvas=scene.renderer.domElement; this.camera=scene.camera;
-          const targets=[
-            {el:btn,   id:"web"},
-            {el:btnV1, id:"v1"},
-            {el:btnV2, id:"v2"},
-            {el:btnR1, id:"r1"},
-            {el:btnR2, id:"r2"},
+      AFRAME.registerComponent("screen-click-handler", {
+        init() {
+          const scene = this.el.sceneEl;
+          this.canvas = scene.renderer.domElement;
+          this.camera = scene.camera;
+          const targets = [
+            { el: btn, id: "web" },
+            { el: btnV1, id: "v1" },
+            { el: btnV2, id: "v2" },
+            { el: btnR1, id: "r1" },
+            { el: btnR2, id: "r2" },
+            { el: btnRegister, id: "register" }
           ];
-          targets.forEach(t=>t.obj3D=t.el.object3D);
-          const ray=new THREE.Raycaster(); const p=new THREE.Vector2();
+          targets.forEach(t => t.obj3D = t.el.object3D);
+          const ray = new THREE.Raycaster();
+          const p = new THREE.Vector2();
 
-          const onPointer=(ev)=>{
-            const touch=ev.type.startsWith("touch");
-            const x=touch?ev.touches[0].clientX:ev.clientX;
-            const y=touch?ev.touches[0].clientY:ev.clientY;
-            const r=this.canvas.getBoundingClientRect();
-            p.x=((x-r.left)/r.width)*2-1; p.y=-(((y-r.top)/r.height)*2-1);
-            ray.setFromCamera(p,this.camera);
-            const hits=ray.intersectObjects(targets.map(t=>t.obj3D),true);
-            if(!hits.length)return;
-            const hit=hits[0].object;
-            const target=targets.find(t=>t.obj3D===hit||t.obj3D.children.includes(hit)||t.obj3D.children.some(c=>c===hit||c.children.includes(hit)));
-            if(!target)return;
+          const onPointer = (ev) => {
+            const touch = ev.type.startsWith("touch");
+            const x = touch ? ev.touches[0].clientX : ev.clientX;
+            const y = touch ? ev.touches[0].clientY : ev.clientY;
+            const r = this.canvas.getBoundingClientRect();
+            p.x = ((x - r.left) / r.width) * 2 - 1;
+            p.y = -(((y - r.top) / r.height) * 2 - 1);
+            ray.setFromCamera(p, this.camera);
+            const hits = ray.intersectObjects(targets.map(t => t.obj3D), true);
+            if (!hits.length) return;
+            const hit = hits[0].object;
+            const target = targets.find(t => t.obj3D === hit || t.obj3D.children.includes(hit) || t.obj3D.children.some(c => c === hit || c.children.includes(hit)));
+            if (!target) return;
 
-            if(target.id==="web"){ window.open(URL,"_blank")||window.location.assign(URL); return; }
-            if(target.id==="v1"){ v1.paused ? playV1() : pauseV1(); return; }
-            if(target.id==="v2"){ v2.paused ? playV2() : pauseV2(); return; }
-            if(target.id==="r1"){ restartV1(); return; }
-            if(target.id==="r2"){ restartV2(); return; }
+            if (target.id === "web") {
+              window.open(URL, "_blank") || window.location.assign(URL);
+              return;
+            }
+            if (target.id === "v1") { v1.paused ? playV1() : pauseV1(); return; }
+            if (target.id === "v2") { v2.paused ? playV2() : pauseV2(); return; }
+            if (target.id === "r1") { restartV1(); return; }
+            if (target.id === "r2") { restartV2(); return; }
+            if (target.id === "register") { window.open(FORM_URL, "_blank"); return; }
           };
 
-          window.addEventListener("click",onPointer,{passive:true});
-          window.addEventListener("touchstart",onPointer,{passive:true});
+          window.addEventListener("click", onPointer, { passive: true });
+          window.addEventListener("touchstart", onPointer, { passive: true });
         }
       });
 
-      document.querySelector("a-scene").setAttribute("screen-click-handler","");
+      document.querySelector("a-scene").setAttribute("screen-click-handler", "");
     </script>
+
   </body>
 </html>
