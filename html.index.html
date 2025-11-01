@@ -12,6 +12,7 @@
       renderer="colorManagement: true, physicallyCorrectLights"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
+      embedded
     >
       <a-assets>
         <img id="card" src="assets/Paola Sanchez.jpg" />
@@ -20,9 +21,12 @@
         <video id="video2" src="assets/video2.mp4" loop playsinline preload="auto" crossorigin="anonymous"></video>
       </a-assets>
 
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <!-- Mantener la cámara para visión en dispositivos horizontales -->
+      <a-camera position="0 0 0" look-controls="enabled: false" fov="80"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0">
+      <!-- Elementos fijos en el espacio 3D -->
+      <a-entity mindar-image-target="targetIndex: 0" visible="true"> <!-- Se asegura que siga detectando -->
+
         <!-- Tarjeta principal -->
         <a-plane src="#card" width="1.0" height="0.6" position="0 0 0" material="side: double"></a-plane>
 
@@ -35,7 +39,7 @@
           position="0 -0.45 0.01"
           material="side: double"
         >
-          <a-text value="Registrate aqui / Register here" align="center" scale="0.2 0.2 0.2" color="#A69886" font="dejavu"></a-text>
+          <a-text value="REGISTRATE AQUÍ / REGISTER HERE" align="center" scale="0.2 0.2 0.2" color="#A69886" font="dejavu"></a-text>
         </a-plane>
 
         <!-- Botón WEB -->
@@ -43,19 +47,17 @@
           <a-text value="IR A LA WEB" align="center" scale="0.2 0.2 0.2" color="#A69886" font="dejavu"></a-text>
         </a-plane>
 
-        
-
         <!-- =========================
              BLOQUE VIDEO 1 (IZQUIERDA)
              ========================= -->
         <a-video id="vid1" src="#video1" width="0.6" height="1.0" position="-0.9 0 0.01" material="side: double"></a-video>
 
         <!-- Grupo de botones centrado bajo el video 1 -->
-        <a-plane id="btnV1" color="#A69576" width="0.45" height="0.12" position="-0.975 -0.65 0.02" material="side: double">
+        <a-plane id="btnV1" color="#A69576" width="0.45" height="0.12" position="-0.975 -0.8 0.02" material="side: double">
           <a-text id="lblV1" value="Reproducir" align="center" scale="0.22 0.22 0.22" color="#fff" position="0 0 0.01"></a-text>
         </a-plane>
 
-        <a-plane id="btnR1" color="#BFA980" width="0.12" height="0.12" position="-0.66 -0.65 0.02" material="side: double">
+        <a-plane id="btnR1" color="#BFA980" width="0.12" height="0.12" position="-0.66 -0.8 0.02" material="side: double">
           <a-image src="#iconReset" width="0.08" height="0.08" position="0 0 0.01"></a-image>
         </a-plane>
 
@@ -64,11 +66,11 @@
              ========================= -->
         <a-video id="vid2" src="#video2" width="0.6" height="1.0" position="0.9 0 0.01" material="side: double"></a-video>
 
-        <a-plane id="btnV2" color="#A69576" width="0.45" height="0.12" position="0.825 -0.65 0.02" material="side: double">
+        <a-plane id="btnV2" color="#A69576" width="0.45" height="0.12" position="0.825 -0.8 0.02" material="side: double">
           <a-text id="lblV2" value="Reproducir" align="center" scale="0.22 0.22 0.22" color="#fff" position="0 0 0.01"></a-text>
         </a-plane>
 
-        <a-plane id="btnR2" color="#BFA980" width="0.12" height="0.12" position="1.14 -0.65 0.02" material="side: double">
+        <a-plane id="btnR2" color="#BFA980" width="0.12" height="0.12" position="1.14 -0.8 0.02" material="side: double">
           <a-image src="#iconReset" width="0.08" height="0.08" position="0 0 0.01"></a-image>
         </a-plane>
       </a-entity>
@@ -94,71 +96,13 @@
       // Inicia todo en pausa
       v1.pause(); v2.pause();
 
-      let canClick = true;  // Evita múltiples clics seguidos
+      const playV1 = async () => { await v1.play().catch(()=>{}); v2.pause(); lblV1.setAttribute("value","Pausar"); lblV2.setAttribute("value","Reproducir"); };
+      const pauseV1 = ()=>{ v1.pause(); lblV1.setAttribute("value","Reproducir"); };
+      const playV2 = async () => { await v2.play().catch(()=>{}); v1.pause(); lblV2.setAttribute("value","Pausar"); lblV1.setAttribute("value","Reproducir"); };
+      const pauseV2 = ()=>{ v2.pause(); lblV2.setAttribute("value","Reproducir"); };
 
-      const playV1 = async () => {
-        if (!canClick) return;
-        canClick = false;  // Bloquea el click para evitar la acción repetida
-        await v1.play().catch(() => {});
-        v2.pause();
-        lblV1.setAttribute("value", "Pausar");
-        lblV2.setAttribute("value", "Reproducir");
-
-        setTimeout(() => canClick = true, 300);  // Libera el click después de 300ms
-      };
-
-      const pauseV1 = () => {
-        if (!canClick) return;
-        canClick = false;
-        v1.pause();
-        lblV1.setAttribute("value", "Reproducir");
-
-        setTimeout(() => canClick = true, 300);  // Libera el click después de 300ms
-      };
-
-      const playV2 = async () => {
-        if (!canClick) return;
-        canClick = false;
-        await v2.play().catch(() => {});
-        v1.pause();
-        lblV2.setAttribute("value", "Pausar");
-        lblV1.setAttribute("value", "Reproducir");
-
-        setTimeout(() => canClick = true, 300);  // Libera el click después de 300ms
-      };
-
-      const pauseV2 = () => {
-        if (!canClick) return;
-        canClick = false;
-        v2.pause();
-        lblV2.setAttribute("value", "Reproducir");
-
-        setTimeout(() => canClick = true, 300);  // Libera el click después de 300ms
-      };
-
-      const restartV1 = () => {
-        if (!canClick) return;
-        canClick = false;
-        v1.currentTime = 0;
-        v1.play().catch(() => {});
-        v2.pause();
-        lblV1.setAttribute("value", "Pausar");
-        lblV2.setAttribute("value", "Reproducir");
-
-        setTimeout(() => canClick = true, 300);  // Libera el click después de 300ms
-      };
-
-      const restartV2 = () => {
-        if (!canClick) return;
-        canClick = false;
-        v2.currentTime = 0;
-        v2.play().catch(() => {});
-        v1.pause();
-        lblV2.setAttribute("value", "Pausar");
-        lblV1.setAttribute("value", "Reproducir");
-
-        setTimeout(() => canClick = true, 300);  // Libera el click después de 300ms
-      };
+      const restartV1 = ()=>{ v1.currentTime=0; v1.play().catch(()=>{}); v2.pause(); lblV1.setAttribute("value","Pausar"); lblV2.setAttribute("value","Reproducir"); };
+      const restartV2 = ()=>{ v2.currentTime=0; v2.play().catch(()=>{}); v1.pause(); lblV2.setAttribute("value","Pausar"); lblV1.setAttribute("value","Reproducir"); };
 
       // Redirigir al formulario al hacer clic en el botón "Registrate aquí"
       btnRegister.addEventListener("click", () => {
@@ -166,55 +110,41 @@
       });
 
       // Raycast manual: web / v1 / v2 / r1 / r2
-      AFRAME.registerComponent("screen-click-handler", {
-        init() {
-          const scene = this.el.sceneEl;
-          this.canvas = scene.renderer.domElement;
-          this.camera = scene.camera;
-          const targets = [
-            { el: btn, id: "web" },
-            { el: btnV1, id: "v1" },
-            { el: btnV2, id: "v2" },
-            { el: btnR1, id: "r1" },
-            { el: btnR2, id: "r2" },
-            { el: btnRegister, id: "register" }
-          ];
-          targets.forEach(t => t.obj3D = t.el.object3D);
-          const ray = new THREE.Raycaster();
-          const p = new THREE.Vector2();
+      AFRAME.registerComponent("screen-click-handler",{
+        init(){
+          const scene=this.el.sceneEl;
+          this.canvas=scene.renderer.domElement; this.camera=scene.camera;
+          const targets=[{el:btn,id:"web"},{el:btnV1,id:"v1"},{el:btnV2,id:"v2"},{el:btnR1,id:"r1"},{el:btnR2,id:"r2"},{el:btnRegister,id:"register"}];
+          targets.forEach(t=>t.obj3D=t.el.object3D);
+          const ray=new THREE.Raycaster(); const p=new THREE.Vector2();
 
-          const onPointer = (ev) => {
-            const touch = ev.type.startsWith("touch");
-            const x = touch ? ev.touches[0].clientX : ev.clientX;
-            const y = touch ? ev.touches[0].clientY : ev.clientY;
-            const r = this.canvas.getBoundingClientRect();
-            p.x = ((x - r.left) / r.width) * 2 - 1;
-            p.y = -(((y - r.top) / r.height) * 2 - 1);
-            ray.setFromCamera(p, this.camera);
-            const hits = ray.intersectObjects(targets.map(t => t.obj3D), true);
-            if (!hits.length) return;
-            const hit = hits[0].object;
-            const target = targets.find(t => t.obj3D === hit || t.obj3D.children.includes(hit) || t.obj3D.children.some(c => c === hit || c.children.includes(hit)));
-            if (!target) return;
+          const onPointer=(ev)=>{
+            const touch=ev.type.startsWith("touch");
+            const x=touch?ev.touches[0].clientX:ev.clientX;
+            const y=touch?ev.touches[0].clientY:ev.clientY;
+            const r=this.canvas.getBoundingClientRect();
+            p.x=((x-r.left)/r.width)*2-1; p.y=-(((y-r.top)/r.height)*2-1);
+            ray.setFromCamera(p,this.camera);
+            const hits=ray.intersectObjects(targets.map(t=>t.obj3D),true);
+            if(!hits.length)return;
+            const hit=hits[0].object;
+            const target=targets.find(t=>t.obj3D===hit||t.obj3D.children.includes(hit)||t.obj3D.children.some(c=>c===hit||c.children.includes(hit)));
+            if(!target)return;
 
-            if (target.id === "web") {
-              window.open(URL, "_blank") || window.location.assign(URL);
-              return;
-            }
-            if (target.id === "v1") { v1.paused ? playV1() : pauseV1(); return; }
-            if (target.id === "v2") { v2.paused ? playV2() : pauseV2(); return; }
-            if (target.id === "r1") { restartV1(); return; }
-            if (target.id === "r2") { restartV2(); return; }
-            if (target.id === "register") { window.open(FORM_URL, "_blank"); return; }
+            if(target.id==="web"){ window.open(URL,"_blank")||window.location.assign(URL); return; }
+            if(target.id==="v1"){ v1.paused ? playV1() : pauseV1(); return; }
+            if(target.id==="v2"){ v2.paused ? playV2() : pauseV2(); return; }
+            if(target.id==="r1"){ restartV1(); return; }
+            if(target.id==="r2"){ restartV2(); return; }
+            if(target.id==="register"){ window.open(FORM_URL, "_blank"); return; }
           };
 
-          window.addEventListener("click", onPointer, { passive: true });
-          window.addEventListener("touchstart", onPointer, { passive: true });
+          window.addEventListener("click",onPointer,{passive:true});
+          window.addEventListener("touchstart",onPointer,{passive:true});
         }
       });
 
-      document.querySelector("a-scene").setAttribute("screen-click-handler", "");
+      document.querySelector("a-scene").setAttribute("screen-click-handler","");
     </script>
-
   </body>
 </html>
