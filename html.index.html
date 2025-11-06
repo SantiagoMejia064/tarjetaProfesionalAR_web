@@ -21,12 +21,9 @@
         <video id="video2" src="assets/video2.mp4" loop playsinline preload="auto" crossorigin="anonymous"></video>
       </a-assets>
 
-      <!-- Ajuste de cámara para visión en dispositivos horizontales -->
       <a-camera position="0 0 0" look-controls="enabled: false" fov="80"></a-camera>
 
-      <!-- Elementos visibles que no dependen del tracking -->
       <a-entity mindar-image-target="targetIndex: 0" visible="true">
-
         <!-- Tarjeta principal -->
         <a-plane src="#card" width="1.0" height="0.6" position="0 0 0" material="side: double"></a-plane>
 
@@ -39,17 +36,29 @@
           position="0 -0.45 0.01"
           material="side: double"
         >
-          <a-text value="REGISTRATE AQUÍ / REGISTER HERE" align="center" scale="0.2 0.2 0.2" color="#A69886" font="dejavu"></a-text>
+          <a-text value="REGISTRATE AQUI / REGISTER HERE" align="center" scale="0.2 0.2 0.2" color="#A69886" font="dejavu"></a-text>
+        </a-plane>
+
+        <!-- Nuevo botón: Ir a Instagram -->
+        <a-plane
+          id="btnInstagram"
+          color="#ffffff"
+          width="0.6"
+          height="0.12"
+          position="0 -0.75 0.01"
+          material="side: double"
+        >
+          <a-text value="SIGUENOS EN INSTAGRAM" align="center" scale="0.2 0.2 0.2" color="#A69886" font="dejavu"></a-text>
         </a-plane>
 
         <!-- Botón WEB -->
         <a-plane id="btn" color="#ffffff" width="0.6" height="0.12" position="0 -0.6 0.01" material="side: double">
-          <a-text value="IR A LA WEB" align="center" scale="0.2 0.2 0.2" color="#A69886" font="dejavu"></a-text>
+          <a-text value="VISITA NUESTRA WEB" align="center" scale="0.2 0.2 0.2" color="#A69886" font="dejavu"></a-text>
         </a-plane>
 
         <!-- =========================
-             BLOQUE VIDEO 1 (IZQUIERDA)
-             ========================= -->
+            BLOQUE VIDEO 1 (IZQUIERDA)
+            ========================= -->
         <a-video id="vid1" src="#video1" width="0.6" height="1.0" position="-0.9 0 0.01" material="side: double"></a-video>
 
         <!-- Botones debajo del video 1 -->
@@ -62,8 +71,8 @@
         </a-plane>
 
         <!-- =========================
-             BLOQUE VIDEO 2 (DERECHA)
-             ========================= -->
+            BLOQUE VIDEO 2 (DERECHA)
+            ========================= -->
         <a-video id="vid2" src="#video2" width="0.6" height="1.0" position="0.9 0 0.01" material="side: double"></a-video>
 
         <!-- Botones debajo del video 2 -->
@@ -79,11 +88,10 @@
     </a-scene>
 
     <script>
-      const URL = "https://paolasanchezortodoncia.com";
+      const IG = "https://www.instagram.com/paolasanchez_ortodoncia/";
       const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfQi4iy42Rf00xZrCHNl3PLo1dYFF1NBe8McPPeC7rsFXCu7g/viewform?usp=header";
       const v1 = document.getElementById("video1");
       const v2 = document.getElementById("video2");
-      const btn = document.getElementById("btn");
 
       const btnV1 = document.getElementById("btnV1");
       const btnV2 = document.getElementById("btnV2");
@@ -94,6 +102,7 @@
       const btnR2 = document.getElementById("btnR2");
 
       const btnRegister = document.getElementById("btnRegister");
+      const btnInstagram = document.getElementById("btnInstagram");
 
       // Inicia todo en pausa
       v1.pause(); v2.pause();
@@ -111,12 +120,16 @@
         window.open(FORM_URL, "_blank");
       });
 
+      btnInstagram.addEventListener("click", () => {
+        window.open(IG, "_blank");
+      });
+
       // Raycast manual: web / v1 / v2 / r1 / r2
       AFRAME.registerComponent("screen-click-handler",{
         init(){
           const scene=this.el.sceneEl;
           this.canvas=scene.renderer.domElement; this.camera=scene.camera;
-          const targets=[{el:btn,id:"web"},{el:btnV1,id:"v1"},{el:btnV2,id:"v2"},{el:btnR1,id:"r1"},{el:btnR2,id:"r2"},{el:btnRegister,id:"register"}];
+          const targets=[{el:btn,id:"web"},{el:btnV1,id:"v1"},{el:btnV2,id:"v2"},{el:btnR1,id:"r1"},{el:btnR2,id:"r2"},{el:btnRegister,id:"register"},{el:btnInstagram,id:"instagram"}];
           targets.forEach(t=>t.obj3D=t.el.object3D);
           const ray=new THREE.Raycaster(); const p=new THREE.Vector2();
 
@@ -133,12 +146,13 @@
             const target=targets.find(t=>t.obj3D===hit||t.obj3D.children.includes(hit)||t.obj3D.children.some(c=>c===hit||c.children.includes(hit)));
             if(!target)return;
 
-            if(target.id==="web"){ window.open(URL,"_blank")||window.location.assign(URL); return; }
+            if(target.id==="web"){ window.open("https://paolasanchezortodoncia.com","_blank")||window.location.assign("https://paolasanchezortodoncia.com"); return; }
             if(target.id==="v1"){ v1.paused ? playV1() : pauseV1(); return; }
             if(target.id==="v2"){ v2.paused ? playV2() : pauseV2(); return; }
             if(target.id==="r1"){ restartV1(); return; }
             if(target.id==="r2"){ restartV2(); return; }
             if(target.id==="register"){ window.open(FORM_URL, "_blank"); return; }
+            if(target.id==="instagram"){ window.open(IG, "_blank"); return; }
           };
 
           window.addEventListener("click",onPointer,{passive:true});
