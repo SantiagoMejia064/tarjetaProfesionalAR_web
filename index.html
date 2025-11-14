@@ -3,11 +3,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+    <!-- Componente de suavizado -->
+    <script>
+      AFRAME.registerComponent('smooth-move', {
+        schema: {
+          speed: { type: 'number', default: 0.01 }  <!-- Velocidad ajustada para minimizar el temblor -->
+        },
+
+        init: function () {
+          this.targetPosition = new THREE.Vector3();  // Usaremos este vector para calcular el objetivo
+          this.currentPosition = new THREE.Vector3(); // La posición actual del objeto
+        },
+
+        tick: function () {
+          // Obtener la posición actual del objeto
+          let position = this.el.object3D.position;
+
+          // Si la posición de seguimiento ha cambiado, actualizar la posición objetivo
+          if (this.targetPosition.distanceTo(position) > 0.01) {
+            this.currentPosition.lerp(this.targetPosition, this.data.speed); // Suavizar el movimiento
+            position.copy(this.currentPosition); // Aplicar la nueva posición suavizada
+          }
+        },
+
+        update: function () {
+          // Aquí actualizamos la posición objetivo a la nueva posición cuando cambia
+          this.targetPosition.copy(this.el.object3D.position);
+        }
+      });
+    </script>
   </head>
 
   <body>
     <a-scene
-      mindar-image="imageTargetSrc: assets/targets.mind; trackingFrequency: 320;"
+      mindar-image="imageTargetSrc: assets/targets.mind; trackingFrequency: 60;"
       color-space="sRGB"
       renderer="colorManagement: true, physicallyCorrectLights"
       vr-mode-ui="enabled: false"
@@ -22,10 +52,11 @@
         <video id="video2" src="assets/video2.mp4" loop playsinline preload="auto" crossorigin="anonymous"></video>
       </a-assets>
 
+      <!-- Mantener la cámara para visión en dispositivos horizontales -->
       <a-camera position="0 0 0" look-controls="enabled: false" fov="80"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0" visible="true">
-        <!-- Tarjeta principal -->
+      <a-entity mindar-image-target="targetIndex: 0" smooth-move="speed: 0.01" visible="true">
+        <!-- Tarjeta principal con suavizado -->
         <a-plane src="#card" width="1.0" height="0.6" position="0 0 0" material="side: double"></a-plane>
 
         <!-- Nuevo botón: Registrate aquí -->
@@ -105,16 +136,42 @@
       const btnRegister = document.getElementById("btnRegister");
       const btnInstagram = document.getElementById("btnInstagram");
 
+      let debounceTimeout = null; // Variable para almacenar el timeout del debounce
+
       // Inicia todo en pausa
       v1.pause(); v2.pause();
 
-      const playV1 = async () => { await v1.play().catch(()=>{}); v2.pause(); lblV1.setAttribute("value","Pausar"); lblV2.setAttribute("value","Reproducir"); };
-      const pauseV1 = ()=>{ v1.pause(); lblV1.setAttribute("value","Reproducir"); };
-      const playV2 = async () => { await v2.play().catch(()=>{}); v1.pause(); lblV2.setAttribute("value","Pausar"); lblV1.setAttribute("value","Reproducir"); };
-      const pauseV2 = ()=>{ v2.pause(); lblV2.setAttribute("value","Reproducir"); };
+      const playV1 = async () => { 
+        if (debounceTimeout) return; // Si ya hay un timeout, no hacer nada
+        debounceTimeout = setTimeout(() => { debounceTimeout = null; }, 500); // Esperar 500ms antes de permitir otro clic
+        await v1.play().catch(()=>{}); v2.pause(); lblV1.setAttribute("value","Pausar"); lblV2.setAttribute("value","Reproducir"); 
+      };
+      const pauseV1 = () => { 
+        if (debounceTimeout) return; // Si ya hay un timeout, no hacer nada
+        debounceTimeout = setTimeout(() => { debounceTimeout = null; }, 500); // Esperar 500ms antes de permitir otro clic
+        v1.pause(); lblV1.setAttribute("value","Reproducir"); 
+      };
+      const playV2 = async () => { 
+        if (debounceTimeout) return; // Si ya hay un timeout, no hacer nada
+        debounceTimeout = setTimeout(() => { debounceTimeout = null; }, 500); // Esperar 500ms antes de permitir otro clic
+        await v2.play().catch(()=>{}); v1.pause(); lblV2.setAttribute("value","Pausar"); lblV1.setAttribute("value","Reproducir"); 
+      };
+      const pauseV2 = () => { 
+        if (debounceTimeout) return; // Si ya hay un timeout, no hacer nada
+        debounceTimeout = setTimeout(() => { debounceTimeout = null; }, 500); // Esperar 500ms antes de permitir otro clic
+        v2.pause(); lblV2.setAttribute("value","Reproducir"); 
+      };
 
-      const restartV1 = ()=>{ v1.currentTime=0; v1.play().catch(()=>{}); v2.pause(); lblV1.setAttribute("value","Pausar"); lblV2.setAttribute("value","Reproducir"); };
-      const restartV2 = ()=>{ v2.currentTime=0; v2.play().catch(()=>{}); v1.pause(); lblV2.setAttribute("value","Pausar"); lblV1.setAttribute("value","Reproducir"); };
+      const restartV1 = () => { 
+        if (debounceTimeout) return; // Si ya hay un timeout, no hacer nada
+        debounceTimeout = setTimeout(() => { debounceTimeout = null; }, 500); // Esperar 500ms antes de permitir otro clic
+        v1.currentTime = 0; v1.play().catch(()=>{}); v2.pause(); lblV1.setAttribute("value","Pausar"); lblV2.setAttribute("value","Reproducir"); 
+      };
+      const restartV2 = () => { 
+        if (debounceTimeout) return; // Si ya hay un timeout, no hacer nada
+        debounceTimeout = setTimeout(() => { debounceTimeout = null; }, 500); // Esperar 500ms antes de permitir otro clic
+        v2.currentTime = 0; v2.play().catch(()=>{}); v1.pause(); lblV2.setAttribute("value","Pausar"); lblV1.setAttribute("value","Reproducir"); 
+      };
 
       // Redirigir al formulario al hacer clic en el botón "Registrate aquí"
       btnRegister.addEventListener("click", () => {
